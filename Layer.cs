@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,26 +7,26 @@ namespace MyAI
     public class Layer
     {
         private int nInputs;
-        private List<double> inputs;
-        private List<double> outputs;
-        public List<Neuron> neurons;
+        private double[] inputs;
+        private double[] outputs;
+        public Neuron[] neurons;
 
         public Layer(int numNeurons, int numInputs, double learnRate)
         {
             nInputs = numInputs;
-            neurons = new List<Neuron>();
+            neurons = new Neuron[numNeurons];
 
-            outputs = new List<double>();
-
-            for (int i = 0; i < numNeurons; i++)
+            for(int i = 0; i < neurons.Length; i++)
             {
-                neurons.Add(new Neuron(numInputs, learnRate));
+                neurons[i] = new Neuron(numInputs, learnRate);
             }
+
+            outputs = new double[numNeurons];
         }
 
-        public void SetInputs(List<double> input)
+        public void SetInputs(double[] input)
         {
-            if (input.Count != nInputs)
+            if (input.Length != nInputs)
             {
                 //Console.WriteLine("Incorrect number of inputs for this layer, should be " + nInputs + " inputs, there is " + input.Count + " inputs");
                 return;
@@ -34,27 +34,35 @@ namespace MyAI
 
             inputs = input;
 
-            foreach (Neuron neuron in neurons)
+            for(int i = 0; i < neurons.Length; i++)
             {
-                neuron.SetInputs(inputs);
+                neurons[i].SetInputs(inputs);
             }
         }
 
-        public List<double> CalcOutput()
+        public double[] CalcOutput()
         {
-            outputs.Clear();
-
-            foreach (Neuron neuron in neurons)
+            for(int i = 0; i < outputs.Length; i++)
             {
-                outputs.Add(neuron.CalcOutput());
+                outputs[i] = neurons[i].CalcOutput();
             }
 
             return outputs;
         }
 
-        public void ReWeightOutput(List<double> desiredOutput, List<double> output)
+        public double[] CalcOutputHidden()
         {
-            for (int i = 0; i < neurons.Count; i++)
+            for (int i = 0; i < outputs.Length; i++)
+            {
+                outputs[i] = neurons[i].CalcOutputHidden();
+            }
+
+            return outputs;
+        }
+
+        public void ReWeightOutput(double[] desiredOutput, double[] output)
+        {
+            for (int i = 0; i < neurons.Length; i++)
             {
                 neurons[i].ReWeightOutput(desiredOutput[i], output[i]);
             }
@@ -62,7 +70,7 @@ namespace MyAI
 
         public void ReWeightHidden(Layer prevLayer)
         {
-            for (int i = 0; i < neurons.Count; i++)
+            for (int i = 0; i < neurons.Length; i++)
             {
                 neurons[i].ReWeightHidden(prevLayer, i);
             }
@@ -70,7 +78,7 @@ namespace MyAI
 
         public void Mutate()
         {
-            for (int i = 0; i < neurons.Count; i++)
+            for (int i = 0; i < neurons.Length; i++)
             {
                 neurons[i].Mutate();
             }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -7,12 +7,12 @@ namespace MyAI
 {
     public class NeuralNetwork
     {
-        private List<Layer> layers;
-        private List<double>[] arrOfOutputs;
-        public int numOfHidden;
-        public int numOfInputs;
-        public int layerSize;
-        public int numOfOuputs;
+        private Layer[] layers;
+        private double[,] arrOfOutputs;
+        public readonly int numOfHidden;
+        public readonly int numOfInputs;
+        public readonly int layerSize;
+        public readonly int numOfOuputs;
 
         public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers)
         {
@@ -21,19 +21,27 @@ namespace MyAI
             layerSize = sizeOfLayers;
             numOfOuputs = numOutputs;
 
-            arrOfOutputs = new List<double>[numHiddenLayers + 2];//Keep track of all outputs
+            if(sizeOfLayers > numOfOuputs)
+            {
+                arrOfOutputs = new double[numHiddenLayers + 2, sizeOfLayers];//Keep track of all outputs
+            }
+            else
+            {
+                arrOfOutputs = new double[numHiddenLayers + 2, numOfOuputs];//Keep track of all outputs
+            }
 
-            layers = new List<Layer>();
+            layers = new Layer[numHiddenLayers + 2];
 
-            layers.Add(new Layer(sizeOfLayers, numInputs, 0.5));//input layer
+            layers[0] = new Layer(sizeOfLayers, numInputs, 0.5);//input layer
 
             for (int i = 0; i < numHiddenLayers; i++)
             {
-                layers.Add(new Layer(sizeOfLayers, sizeOfLayers, 0.5));//hidden layers
+                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, 0.5);//hidden layers
             }
 
-            layers.Add(new Layer(numOutputs, sizeOfLayers, 0.5));//output layer
+            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, 0.5);//output layer
 
+            /*
             List<double> defaultInputs = new List<double>();
             for(int i = 0; i < numInputs; i++)
             {
@@ -41,55 +49,77 @@ namespace MyAI
             }
 
             SetInputs(defaultInputs);
+            */
         }
 
-        public void SetInputs(List<double> input)
+        public void SetInputs(double[] input)
         {
             layers[0].SetInputs(input);//set the inputs for the input layer
         }
 
-        public List<double> CalcOutput()
+        public double[] CalcOutput()
         {
-            List<double> lastOutput;
+            double[] lastOutput;
 
             lastOutput = layers[0].CalcOutput();//output from input layer
-            arrOfOutputs[0] = lastOutput;//adds to outputs
 
-            for (int i = 1; i < layers.Count; i++)
+            for (int i = 1; i < layers.Length; i++)
             {
+                for (int a = 0; a < lastOutput.Length; a++)
+                {
+                    arrOfOutputs[i, a] = lastOutput[a];//keep track of outputs
+                }
+
                 layers[i].SetInputs(lastOutput);//set inputs of hidden layer to output of last layer
                 lastOutput = layers[i].CalcOutput();//get the output
-                arrOfOutputs[i] = lastOutput;//keep track of outputs
+            }
+
+            for (int a = 0; a < lastOutput.Length; a++)
+            {
+                arrOfOutputs[layers.Length - 1, a] = lastOutput[a];//keep track of outputs
             }
 
             return lastOutput;//return the output of the last layer
         }
 
-        public void Correct(List<double> desiredOuput, List<double> output)
+        public void Correct(double[] desiredOuput, double[] output)
         {
-            layers[layers.Count - 1].ReWeightOutput(desiredOuput, output);//reweight the output layer
+            layers[layers.Length - 1].ReWeightOutput(desiredOuput, output);//reweight the output layer
 
-            for (int i = layers.Count - 2; i >= 0; i--)
+            for (int i = layers.Length - 2; i >= 0; i--)
             {
                 layers[i].ReWeightHidden(layers[i + 1]);//reweight each hidden layer
             }
         }
 
-        public void Train(List<double>[] inputs, List<double>[] desiredOutputs)
+        public void Train(double[,] inputs, double[,] desiredOutputs)
         {
-            for (int i = 0; i < inputs.Length; i++)//for every list of input
+            for (int i = 0; i < inputs.GetLength(0); i++)//for every list of input
             {
-                SetInputs(inputs[i]);//set a new input
-                List<double> output = CalcOutput();//calculate the new output
-                Correct(desiredOutputs[i], output);//correct for any mistakes
+                double[] thisInput = new double[numOfInputs];
+                for(int a = 0; a < thisInput.Length; a++)
+                {
+                    thisInput[a] = inputs[i,a];
+                }
+
+                SetInputs(thisInput);//set a new input
+                double[] output = CalcOutput();//calculate the new output
+
+                double[] thisDesired = new double[numOfOuputs];
+                for (int a = 0; a < thisDesired.Length; a++)
+                {
+                    thisDesired[a] = desiredOutputs[i, a];
+                }
+
+                Correct(thisDesired, output);//correct for any mistakes
             }
         }
 
-        public string[] GetWeights()
+        public string[] GetWeights()//so the current weights can be loaded into another network
         {
             List<string> weights = new List<string>();
 
-            for(int i = 0; i < layers.Count; i++)
+            for(int i = 0; i < layers.Length; i++)
             {
                 weights.Add(i.ToString());
                 foreach(Neuron neuron in layers[i].neurons)
@@ -101,14 +131,14 @@ namespace MyAI
             return weights.ToArray();
         }
 
-        public void SaveWeights(string filePath)
+        public void SaveWeights(string filePath)//saves the weights for later use
         {
             string[] weightText = GetWeights();
 
             File.WriteAllLines(filePath, weightText);
         }
 
-        public void LoadWeights(string[] weightsString)
+        public void LoadWeights(string[] weightsString)//sets the weights from another network
         {
             int layerNum = 0;
             int neuronCount = 0;
@@ -127,18 +157,24 @@ namespace MyAI
             }
         }
 
-        public void LoadFileWeights(string filePath)
+        public void LoadFileWeights(string filePath)//can get weights from a file to save training again
         {
             string[] lines = File.ReadAllLines(filePath);
             LoadWeights(lines);
         }
 
-        public void Mutate()
+        public void Mutate()//randomly changes everything by a small amount
         {
-            for(int i = 0; i < layers.Count; i++)
+            for(int i = 0; i < layers.Length; i++)
             {
                 layers[i].Mutate();
             }
         }
+
+        public double[,] GetOuputs()
+        {
+            return arrOfOutputs;
+        }
     }
 }
+

@@ -57,7 +57,7 @@ namespace MyAI
 
             if (inputs.Length != weights.Length)
             {
-                //Console.WriteLine("Incorrect number of inputs, should be " + weights.Count + " inputs, there is " + inputs.Count + " inputs");
+                //Console.WriteLine("Incorrect number of inputs, should be " + weights.Length + " inputs, there is " + inputs.Count + " inputs");
                 return 0;
             }
 

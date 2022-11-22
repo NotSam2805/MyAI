@@ -89,7 +89,7 @@ namespace MyAI
             return lastOutput;//return the output of the last layer
         }
 
-        public void Correct(double[] desiredOuput, double[] output)
+        public void Correct(double[] desiredOuput, double[] output)//Broken, dont use
         {
             layers[layers.Length - 1].ReWeightOutput(desiredOuput, output);//reweight the output layer
 
@@ -99,7 +99,7 @@ namespace MyAI
             }
         }
 
-        public void Train(double[,] inputs, double[,] desiredOutputs)
+        public void Train(double[,] inputs, double[,] desiredOutputs)//Broken due to Correct() being broken
         {
             for (int i = 0; i < inputs.GetLength(0); i++)//for every list of input
             {

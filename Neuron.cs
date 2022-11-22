@@ -6,12 +6,17 @@ namespace MyAI
 {
     public class Neuron
     {
+        //Self explanaory
         private double bias;
         private double output;
         private double[] weights;
         private double[] inputs;
+        
+        //Used for something that doesn't work
         private double learnRate;
         public double errorGradient;
+        
+        //Needed some random numbers
         private Random rnd;
 
         public Neuron(int numInputs, double LearnRate)
@@ -25,30 +30,34 @@ namespace MyAI
 
             for(int i = 0; i < weights.Length; i++)
             {
-                weights[i] = rnd.Next(-100,100)/(double)100;
+                weights[i] = rnd.Next(-100,100)/(double)100;//Each weight is random between -1 and 1
             }
 
-            bias = rnd.NextDouble();
+            bias = rnd.NextDouble();//Random bias
+            
+            //Might be useful to be able to set the weights and biases here, or even the random seed
         }
 
-        private static float Sigmoid(double value)
+        private static float Sigmoid(double value)//We love maths
         {
             return (float)(1.0 / (1.0 + Math.Pow(Math.E, -((value + 0) * 1))));
         }
 
-        private static float TanH(double value)
+        private static float TanH(double value)//Yes we do
         {
             return (float)((2 / (1 + Math.Exp(-2 * value))) - 1);
         }
 
-        public void SetInputs(double[] input)
+        public void SetInputs(double[] input)//Guess what.
         {
             if (input.Length != weights.Length)
             {
                 //Console.WriteLine("Wrong number of inputs, need " + weights.Count + " inputs");
                 return;
             }
-            inputs = input;
+            
+            //'What?'
+            inputs = input;//The inputs are the inputs.
         }
 
         public double CalcOutput()
@@ -63,15 +72,15 @@ namespace MyAI
 
             for (int i = 0; i < inputs.Length; i++)
             {
-                total += inputs[i] * weights[i];
+                total += inputs[i] * weights[i];//Add up the product for each connection of each neuron
             }
 
-            output = Sigmoid(total - bias);
+            output = Sigmoid(total - bias);//Squish that result
 
             return output;
         }
 
-        public double CalcOutputHidden()
+        public double CalcOutputHidden()//Looks very similar, idk why this exists
         {
             double total = 0;
 
@@ -91,7 +100,7 @@ namespace MyAI
             return output;
         }
 
-        public void ReWeightOutput(double desiredOutput)
+        public void ReWeightOutput(double desiredOutput)//Broken
         {
             double error = desiredOutput - output;
             errorGradient = output * (1 - output) * error;
@@ -104,7 +113,7 @@ namespace MyAI
             bias += learnRate * -1 * errorGradient;
         }
 
-        public void ReWeightOutput(double desiredOutput, double output)
+        public void ReWeightOutput(double desiredOutput, double output)//Very broken
         {
             double error = desiredOutput - output;
             errorGradient = output * (1 - output) * error;
@@ -117,7 +126,7 @@ namespace MyAI
             bias += learnRate * -1 * errorGradient;
         }
 
-        public void ReWeightHidden(Layer prevLayer, int weightNum)
+        public void ReWeightHidden(Layer prevLayer, int weightNum)//Even more broken
         {
             errorGradient = output * (1 - output);
             double errorGradSum = 0;
@@ -137,39 +146,40 @@ namespace MyAI
             bias += learnRate * -1 * errorGradient;
         }
         
-        public string GetWeightsString()
+        public string GetWeightsString()//This works
         {
-            string text = "";
+            string text = "";//Make a string of all the weights and bias
 
             foreach (double weight in weights)
             {
-                text += weight.ToString("0.00000") + ",";
+                text += weight.ToString("0.00000") + ",";//Need to do a little rounding, no one will notice
             }
 
             text += bias.ToString("0.00000");
 
-            return text;
+            return text;//Because strings are cool
         }
 
-        public void SetWeights(string weightsString)
+        public void SetWeights(string weightsString)//We can get the weights and bias from a string
         {
-            string[] arr = weightsString.Split(',');
+            //Sould probably check that it is formatted right
+            string[] arr = weightsString.Split(',');//Formatt is important
 
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] = Convert.ToDouble(arr[i]);
+                weights[i] = Convert.ToDouble(arr[i]);//Set each weight
             }
 
-            bias = Convert.ToDouble(arr[weights.Length]);
+            bias = Convert.ToDouble(arr[weights.Length]);//And set the bias
         }
 
-        public void Mutate()
+        public void Mutate()//Because we like a genetic approach
         {
             for(int i = 0; i < weights.Length; i++)
             {
-                weights[i] += weights[i] * 0.001f * rnd.Next(-100, 100);
+                weights[i] += weights[i] * 0.001f * rnd.Next(-100, 100);//Make random change by maximum of 10%
             }
-            bias += bias * 0.001f * rnd.Next(-100, 100);
+            bias += bias * 0.001f * rnd.Next(-100, 100);//Make random change by maximum of 10%
         }
     }
 }

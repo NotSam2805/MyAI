@@ -7,20 +7,26 @@ namespace MyAI
 {
     public class NeuralNetwork
     {
-        private Layer[] layers;
-        private double[,] arrOfOutputs;
+        private Layer[] layers;//The layers of the network
+        private double[,] arrOfOutputs;//2D array to keep track of the outputs from each layer during output calculation, mainly for debugging
+        
+        //The various sizes of the network
         public readonly int numOfHidden;
         public readonly int numOfInputs;
         public readonly int layerSize;
         public readonly int numOfOuputs;
+        //The various sizes of the network
 
         public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers)
         {
+            //Set all the sizes
             numOfHidden = numHiddenLayers;
             numOfInputs = numInputs;
             layerSize = sizeOfLayers;
             numOfOuputs = numOutputs;
+            //Set all the sizes
 
+            //The array of outputs needs to be the right size, either the size of the layers or the number of outputs (whichever is larger)
             if(sizeOfLayers > numOfOuputs)
             {
                 arrOfOutputs = new double[numHiddenLayers + 2, sizeOfLayers];//Keep track of all outputs
@@ -30,7 +36,7 @@ namespace MyAI
                 arrOfOutputs = new double[numHiddenLayers + 2, numOfOuputs];//Keep track of all outputs
             }
 
-            layers = new Layer[numHiddenLayers + 2];
+            layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
 
             layers[0] = new Layer(sizeOfLayers, numInputs, 0.5);//input layer
 
@@ -42,6 +48,7 @@ namespace MyAI
             layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, 0.5);//output layer
 
             /*
+            //Used for debugging
             List<double> defaultInputs = new List<double>();
             for(int i = 0; i < numInputs; i++)
             {
@@ -76,7 +83,7 @@ namespace MyAI
 
             for (int a = 0; a < lastOutput.Length; a++)
             {
-                arrOfOutputs[layers.Length - 1, a] = lastOutput[a];//keep track of outputs
+                arrOfOutputs[layers.Length - 1, a] = lastOutput[a];//keep track of outputs for the last layer
             }
 
             return lastOutput;//return the output of the last layer
@@ -117,14 +124,14 @@ namespace MyAI
 
         public string[] GetWeights()//so the current weights can be loaded into another network
         {
-            List<string> weights = new List<string>();
+            List<string> weights = new List<string>();//An array might be better but a list is easier to use
 
             for(int i = 0; i < layers.Length; i++)
             {
-                weights.Add(i.ToString());
+                weights.Add(i.ToString());//The layer 'number'
                 foreach(Neuron neuron in layers[i].neurons)
                 {
-                    weights.Add(neuron.GetWeightsString());
+                    weights.Add(neuron.GetWeightsString());//Get the weights of each neuron
                 }
             }
 
@@ -134,25 +141,28 @@ namespace MyAI
         public void SaveWeights(string filePath)//saves the weights for later use
         {
             string[] weightText = GetWeights();
-
+            //Maybe use some compression algoithm
             File.WriteAllLines(filePath, weightText);
         }
 
         public void LoadWeights(string[] weightsString)//sets the weights from another network
         {
+            //Should add some check that the string array is for the right number of neurons
+            //Should also check the formatt of the string array
+            
             int layerNum = 0;
             int neuronCount = 0;
-            for (int a = 0; a < weightsString.Length; a++)
+            for (int a = 0; a < weightsString.Length; a++)//foreach loop might be easier to read?
             {
-                if (!weightsString[a].Contains(","))
+                if (!weightsString[a].Contains(","))//The only line with no comma is the layer number
                 {
                     layerNum = Convert.ToInt32(weightsString[a]);
                     neuronCount = 0;
                 }
                 else
                 {
-                    layers[layerNum].neurons[neuronCount].SetWeights(weightsString[a]);
-                    neuronCount++;
+                    layers[layerNum].neurons[neuronCount].SetWeights(weightsString[a]);//Set the weights of the neuron
+                    neuronCount++;//To the next neuron
                 }
             }
         }
@@ -160,6 +170,7 @@ namespace MyAI
         public void LoadFileWeights(string filePath)//can get weights from a file to save training again
         {
             string[] lines = File.ReadAllLines(filePath);
+            //if compressed needs to be decompressed
             LoadWeights(lines);
         }
 

@@ -38,14 +38,14 @@ namespace MyAI
 
             layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
 
-            layers[0] = new Layer(sizeOfLayers, numInputs, 0.5);//input layer
+            layers[0] = new Layer(sizeOfLayers, numInputs, 0.5, -1);//input layer
 
             for (int i = 0; i < numHiddenLayers; i++)
             {
-                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, 0.5);//hidden layers
+                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, 0.5, i);//hidden layers
             }
 
-            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, 0.5);//output layer
+            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, 0.5, numHiddenLayers + 1);//output layer
 
             /*
             //Used for debugging
@@ -74,7 +74,7 @@ namespace MyAI
             {
                 for (int a = 0; a < lastOutput.Length; a++)
                 {
-                    arrOfOutputs[i, a] = lastOutput[a];//keep track of outputs
+                    arrOfOutputs[i - 1, a] = lastOutput[a];//keep track of outputs
                 }
 
                 layers[i].SetInputs(lastOutput);//set inputs of hidden layer to output of last layer
@@ -99,24 +99,16 @@ namespace MyAI
             }
         }
 
-        public void Train(double[,] inputs, double[,] desiredOutputs)//Broken due to Correct() being broken
+        public void Train(double[][] inputs, double[][] desiredOutputs)//Broken due to Correct() being broken
         {
             for (int i = 0; i < inputs.GetLength(0); i++)//for every list of input
             {
-                double[] thisInput = new double[numOfInputs];
-                for(int a = 0; a < thisInput.Length; a++)
-                {
-                    thisInput[a] = inputs[i,a];
-                }
+                double[] thisInput = inputs[i];
 
                 SetInputs(thisInput);//set a new input
                 double[] output = CalcOutput();//calculate the new output
 
-                double[] thisDesired = new double[numOfOuputs];
-                for (int a = 0; a < thisDesired.Length; a++)
-                {
-                    thisDesired[a] = desiredOutputs[i, a];
-                }
+                double[] thisDesired = desiredOutputs[i];
 
                 Correct(thisDesired, output);//correct for any mistakes
             }

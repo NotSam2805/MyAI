@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -35,6 +35,25 @@ namespace MyAI
 
             bias = rnd.NextDouble();//Random bias
             
+            //Might be useful to be able to set the weights and biases here, or even the random seed
+        }
+
+        public Neuron(int numInputs, double LearnRate, int seed)
+        {
+            rnd = new Random(seed);
+
+            learnRate = LearnRate;
+
+            inputs = new double[numInputs];
+            weights = new double[numInputs];
+
+            for (int i = 0; i < weights.Length; i++)
+            {
+                weights[i] = rnd.Next(-100, 100) / (double)100;//Each weight is random between -1 and 1
+            }
+
+            bias = rnd.Next(-100, 100) / (double)100;//Random bias
+
             //Might be useful to be able to set the weights and biases here, or even the random seed
         }
 
@@ -75,7 +94,7 @@ namespace MyAI
                 total += inputs[i] * weights[i];//Add up the product for each connection of each neuron
             }
 
-            output = Sigmoid(total - bias);//Squish that result
+            output = TanH(total - bias);//Squish that result
 
             return output;
         }

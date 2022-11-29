@@ -28,6 +28,20 @@ namespace MyAI
             outputs = new double[numNeurons];//Don't know why I didn't put this at the top with the others, I wonder if it's lonely.
         }
 
+        public Layer(int numNeurons, int numInputs, double learnRate, int seed)
+        {
+            //Set the number of inputs and the size of the array
+            nInputs = numInputs;
+            neurons = new Neuron[numNeurons];
+
+            for (int i = 0; i < neurons.Length; i++)
+            {
+                neurons[i] = new Neuron(numInputs, learnRate, seed * i);//Make each neuron
+            }
+
+            outputs = new double[numNeurons];//Don't know why I didn't put this at the top with the others, I wonder if it's lonely.
+        }
+
         public void SetInputs(double[] input)
         {
             if (input.Length != nInputs)//Checks that the input is the right formatt

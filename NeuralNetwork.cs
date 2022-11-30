@@ -8,7 +8,7 @@ namespace MyAI
     public class NeuralNetwork
     {
         private Layer[] layers;//The layers of the network
-        private double[,] arrOfOutputs;//2D array to keep track of the outputs from each layer during output calculation, mainly for debugging
+        private double[][] arrOfOutputs;//array to keep track of the outputs from each layer during output calculation, mainly for debugging
         
         //The various sizes of the network
         public readonly int numOfHidden;
@@ -72,19 +72,13 @@ namespace MyAI
 
             for (int i = 1; i < layers.Length; i++)
             {
-                for (int a = 0; a < lastOutput.Length; a++)
-                {
-                    arrOfOutputs[i - 1, a] = lastOutput[a];//keep track of outputs
-                }
+                arrOfOutputs = lastOutput;
 
                 layers[i].SetInputs(lastOutput);//set inputs of hidden layer to output of last layer
                 lastOutput = layers[i].CalcOutput();//get the output
             }
 
-            for (int a = 0; a < lastOutput.Length; a++)
-            {
-                arrOfOutputs[layers.Length - 1, a] = lastOutput[a];//keep track of outputs for the last layer
-            }
+            arrOfOutputs = lastOutput;
 
             return lastOutput;//return the output of the last layer
         }

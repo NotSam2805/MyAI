@@ -68,6 +68,16 @@ namespace MyAI
             return outputs;
         }
 
+        public double[] CalcOutput(ActivationFunction function)
+        {
+            for (int i = 0; i < outputs.Length; i++)
+            {
+                outputs[i] = neurons[i].CalcOutput(function);//Get the output of each neuron
+            }
+
+            return outputs;
+        }
+
         public double[] CalcOutputHidden()//Ignore this, I was trying something
         {
             for (int i = 0; i < outputs.Length; i++)
@@ -99,6 +109,14 @@ namespace MyAI
             for (int i = 0; i < neurons.Length; i++)
             {
                 neurons[i].Mutate();
+            }
+        }
+
+        public void Mutate(float effect)//Read comment in NeuralNetwork.cs
+        {
+            for (int i = 0; i < neurons.Length; i++)
+            {
+                neurons[i].Mutate(effect);
             }
         }
     }

@@ -17,6 +17,10 @@ namespace MyAI
         public readonly int numOfOuputs;
         //The various sizes of the network
 
+        public readonly double learnRate = 0.1;
+
+        private ActivationFunction activationFunction;
+
         public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers)
         {
             //Set all the sizes
@@ -29,23 +33,69 @@ namespace MyAI
             //The array of outputs needs to be the right size, either the size of the layers or the number of outputs (whichever is larger)
             if(sizeOfLayers > numOfOuputs)
             {
-                arrOfOutputs = new double[numHiddenLayers + 2, sizeOfLayers];//Keep track of all outputs
+                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
             }
             else
             {
-                arrOfOutputs = new double[numHiddenLayers + 2, numOfOuputs];//Keep track of all outputs
+                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
             }
 
             layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
 
-            layers[0] = new Layer(sizeOfLayers, numInputs, 0.5, -1);//input layer
+            layers[0] = new Layer(sizeOfLayers, numInputs, learnRate, -1);//input layer
 
             for (int i = 0; i < numHiddenLayers; i++)
             {
-                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, 0.5, i);//hidden layers
+                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, learnRate, i);//hidden layers
             }
 
-            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, 0.5, numHiddenLayers + 1);//output layer
+            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, learnRate, numHiddenLayers + 1);//output layer
+
+            activationFunction = ActivationFunction.sigmoid;
+
+            /*
+            //Used for debugging
+            List<double> defaultInputs = new List<double>();
+            for(int i = 0; i < numInputs; i++)
+            {
+                defaultInputs.Add(0);
+            }
+
+            SetInputs(defaultInputs);
+            */
+        }
+
+        public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers, ActivationFunction function)
+        {
+            //Set all the sizes
+            numOfHidden = numHiddenLayers;
+            numOfInputs = numInputs;
+            layerSize = sizeOfLayers;
+            numOfOuputs = numOutputs;
+            //Set all the sizes
+
+            //The array of outputs needs to be the right size, either the size of the layers or the number of outputs (whichever is larger)
+            if (sizeOfLayers > numOfOuputs)
+            {
+                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
+            }
+            else
+            {
+                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
+            }
+
+            layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
+
+            layers[0] = new Layer(sizeOfLayers, numInputs, learnRate, -1);//input layer
+
+            for (int i = 0; i < numHiddenLayers; i++)
+            {
+                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, learnRate, i);//hidden layers
+            }
+
+            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, learnRate, numHiddenLayers + 1);//output layer
+
+            activationFunction = function;
 
             /*
             //Used for debugging
@@ -68,17 +118,17 @@ namespace MyAI
         {
             double[] lastOutput;
 
-            lastOutput = layers[0].CalcOutput();//output from input layer
+            lastOutput = layers[0].CalcOutput(activationFunction);//output from input layer
 
             for (int i = 1; i < layers.Length; i++)
             {
-                arrOfOutputs = lastOutput;
+                arrOfOutputs[i - 1] = lastOutput;
 
                 layers[i].SetInputs(lastOutput);//set inputs of hidden layer to output of last layer
-                lastOutput = layers[i].CalcOutput();//get the output
+                lastOutput = layers[i].CalcOutput(activationFunction);//get the output
             }
 
-            arrOfOutputs = lastOutput;
+            arrOfOutputs[layers.Length - 1] = lastOutput;
 
             return lastOutput;//return the output of the last layer
         }
@@ -95,8 +145,17 @@ namespace MyAI
 
         public void Train(double[][] inputs, double[][] desiredOutputs)//Broken due to Correct() being broken
         {
-            for (int i = 0; i < inputs.GetLength(0); i++)//for every list of input
+            var usedNums = new List<int>();
+            var rnd = new Random();
+            int i = 0;
+            while(usedNums.Count != inputs.Length)
             {
+                while (usedNums.Contains(i))
+                {
+                    i = rnd.Next(0, inputs.Length);
+                }
+                usedNums.Add(i);
+
                 double[] thisInput = inputs[i];
 
                 SetInputs(thisInput);//set a new input
@@ -168,7 +227,15 @@ namespace MyAI
             }
         }
 
-        public double[,] GetOuputs()
+        public void Mutate(float effect)//randomly changes everything by a small amount
+        {
+            for (int i = 0; i < layers.Length; i++)
+            {
+                layers[i].Mutate(effect);
+            }
+        }
+
+        public double[][] GetOuputs()
         {
             return arrOfOutputs;
         }

@@ -4,6 +4,12 @@ using System.Text;
 
 namespace MyAI
 {
+    public enum ActivationFunction
+    {
+        sigmoid,
+        tanH
+    }
+
     public class Neuron
     {
         //Self explanaory
@@ -14,7 +20,7 @@ namespace MyAI
         
         //Used for something that doesn't work
         private double learnRate;
-        public double errorGradient;
+        public long errorGradient;
         
         //Needed some random numbers
         private Random rnd;
@@ -49,20 +55,20 @@ namespace MyAI
 
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] = rnd.Next(-100, 100) / (double)100;//Each weight is random between -1 and 1
+                weights[i] = rnd.NextDouble(); ;//Each weight is random between -1 and 1
             }
 
-            bias = rnd.Next(-100, 100) / (double)100;//Random bias
+            bias = rnd.NextDouble();//Random bias
 
             //Might be useful to be able to set the weights and biases here, or even the random seed
         }
 
-        private static float Sigmoid(double value)//We love maths
+        public static float Sigmoid(double value)//We love maths
         {
             return (float)(1.0 / (1.0 + Math.Pow(Math.E, -((value + 0) * 1))));
         }
 
-        private static float TanH(double value)//Yes we do
+        public static float TanH(double value)//Yes we do
         {
             return (float)((2 / (1 + Math.Exp(-2 * value))) - 1);
         }
@@ -94,7 +100,37 @@ namespace MyAI
                 total += inputs[i] * weights[i];//Add up the product for each connection of each neuron
             }
 
-            output = TanH(total - bias);//Squish that result
+            output = Sigmoid(total - bias);//Squish that result
+
+            return output;
+        }
+
+        public double CalcOutput(ActivationFunction activation)
+        {
+            double total = 0;
+
+            if (inputs.Length != weights.Length)
+            {
+                //Console.WriteLine("Incorrect number of inputs, should be " + weights.Length + " inputs, there is " + inputs.Count + " inputs");
+                return 0;
+            }
+
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                total += inputs[i] * weights[i];//Add up the product for each connection of each neuron
+            }
+
+            //Use correct activation function
+            switch (activation)
+            {
+                default:
+                    //Default to sigmoid
+                    output = Sigmoid(total - bias);
+                    break;
+                case ActivationFunction.tanH:
+                    output = TanH(total - bias);
+                    break;
+            }
 
             return output;
         }
@@ -122,7 +158,7 @@ namespace MyAI
         public void ReWeightOutput(double desiredOutput)//Broken
         {
             double error = desiredOutput - output;
-            errorGradient = output * (1 - output) * error;
+            errorGradient = (long)(output * (1 - output) * error);
 
             for (int i = 0; i < inputs.Length; i++)
             {
@@ -135,7 +171,7 @@ namespace MyAI
         public void ReWeightOutput(double desiredOutput, double output)//Very broken
         {
             double error = desiredOutput - output;
-            errorGradient = output * (1 - output) * error;
+            errorGradient = (long)(output * (1 - output) * error);
 
             for (int i = 0; i < inputs.Length; i++)
             {
@@ -147,7 +183,7 @@ namespace MyAI
 
         public void ReWeightHidden(Layer prevLayer, int weightNum)//Even more broken
         {
-            errorGradient = output * (1 - output);
+            errorGradient = (long)(output * (1 - output));
             double errorGradSum = 0;
 
             for (int i = 0; i < prevLayer.neurons.Length; i++)
@@ -155,7 +191,7 @@ namespace MyAI
                 errorGradSum += prevLayer.neurons[i].errorGradient * prevLayer.neurons[i].weights[weightNum];
             }
 
-            errorGradient *= errorGradSum;
+            errorGradient *= (long)errorGradSum;
 
             for (int i = 0; i < inputs.Length; i++)
             {
@@ -199,6 +235,15 @@ namespace MyAI
                 weights[i] += weights[i] * 0.001f * rnd.Next(-100, 100);//Make random change by maximum of 10%
             }
             bias += bias * 0.001f * rnd.Next(-100, 100);//Make random change by maximum of 10%
+        }
+
+        public void Mutate(float effect)//Because we like a genetic approach
+        {
+            for (int i = 0; i < weights.Length; i++)
+            {
+                weights[i] += weights[i] * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
+            }
+            bias += bias * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
         }
     }
 }

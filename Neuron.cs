@@ -36,7 +36,7 @@ namespace MyAI
 
             for(int i = 0; i < weights.Length; i++)
             {
-                weights[i] = rnd.Next(-100,100)/(double)100;//Each weight is random between -1 and 1
+                weights[i] = rnd.NextDouble();//Each weight is random between -1 and 1
             }
 
             bias = rnd.NextDouble();//Random bias
@@ -65,7 +65,7 @@ namespace MyAI
 
         public static float Sigmoid(double value)//We love maths
         {
-            return (float)(1.0 / (1.0 + Math.Pow(Math.E, -((value + 0) * 1))));
+            return (float)(1.0 / (1.0 + Math.Pow(Math.E, -value)));
         }
 
         public static float TanH(double value)//Yes we do

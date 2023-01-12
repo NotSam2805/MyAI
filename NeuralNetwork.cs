@@ -8,7 +8,7 @@ namespace MyAI
     public class NeuralNetwork
     {
         private Layer[] layers;//The layers of the network
-        private double[][] arrOfOutputs;//array to keep track of the outputs from each layer during output calculation, mainly for debugging
+        private double[][] arrOfOutputs;//Array to keep track of the outputs from each layer during output calculation, mainly for debugging
         
         //The various sizes of the network
         public readonly int numOfHidden;
@@ -42,14 +42,14 @@ namespace MyAI
 
             layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
 
-            layers[0] = new Layer(sizeOfLayers, numInputs, learnRate, -1);//input layer
+            layers[0] = new Layer(sizeOfLayers, numInputs, learnRate, -1);//Input layer
 
             for (int i = 0; i < numHiddenLayers; i++)
             {
-                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, learnRate, i);//hidden layers
+                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, learnRate, i);//Hidden layers
             }
 
-            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, learnRate, numHiddenLayers + 1);//output layer
+            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, learnRate, numHiddenLayers + 1);//Output layer
 
             activationFunction = ActivationFunction.sigmoid;
 
@@ -65,81 +65,42 @@ namespace MyAI
             */
         }
 
-        public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers, ActivationFunction function)
+        public NeuralNetwork(int numHiddenLayers, int numInputs, int numOutputs, int sizeOfLayers, ActivationFunction function) : this(numHiddenLayers, numInputs, numOutputs, sizeOfLayers)
         {
-            //Set all the sizes
-            numOfHidden = numHiddenLayers;
-            numOfInputs = numInputs;
-            layerSize = sizeOfLayers;
-            numOfOuputs = numOutputs;
-            //Set all the sizes
-
-            //The array of outputs needs to be the right size, either the size of the layers or the number of outputs (whichever is larger)
-            if (sizeOfLayers > numOfOuputs)
-            {
-                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
-            }
-            else
-            {
-                arrOfOutputs = new double[numHiddenLayers + 2][];//Keep track of all outputs
-            }
-
-            layers = new Layer[numHiddenLayers + 2];//The input layer, the hidden layers, and the output layer
-
-            layers[0] = new Layer(sizeOfLayers, numInputs, learnRate, -1);//input layer
-
-            for (int i = 0; i < numHiddenLayers; i++)
-            {
-                layers[i + 1] = new Layer(sizeOfLayers, sizeOfLayers, learnRate, i);//hidden layers
-            }
-
-            layers[numHiddenLayers + 1] = new Layer(numOutputs, sizeOfLayers, learnRate, numHiddenLayers + 1);//output layer
-
             activationFunction = function;
-
-            /*
-            //Used for debugging
-            List<double> defaultInputs = new List<double>();
-            for(int i = 0; i < numInputs; i++)
-            {
-                defaultInputs.Add(0);
-            }
-
-            SetInputs(defaultInputs);
-            */
         }
 
         public void SetInputs(double[] input)
         {
-            layers[0].SetInputs(input);//set the inputs for the input layer
+            layers[0].SetInputs(input);//Set the inputs for the input layer
         }
 
         public double[] CalcOutput()
         {
             double[] lastOutput;
 
-            lastOutput = layers[0].CalcOutput(activationFunction);//output from input layer
+            lastOutput = layers[0].CalcOutput(activationFunction);//Output from input layer
+
+            arrOfOutputs[0] = lastOutput;//Store the outputs from each layer for debugging
 
             for (int i = 1; i < layers.Length; i++)
             {
-                arrOfOutputs[i - 1] = lastOutput;
+                arrOfOutputs[i] = lastOutput;//Store the outputs from each layer for debugging
 
-                layers[i].SetInputs(lastOutput);//set inputs of hidden layer to output of last layer
-                lastOutput = layers[i].CalcOutput(activationFunction);//get the output
+                layers[i].SetInputs(lastOutput);//Set inputs of hidden layer to output of last layer
+                lastOutput = layers[i].CalcOutput(activationFunction);//Get the output
             }
 
-            arrOfOutputs[layers.Length - 1] = lastOutput;
-
-            return lastOutput;//return the output of the last layer
+            return lastOutput;//Return the output of the last layer
         }
 
         public void Correct(double[] desiredOuput, double[] output)//Broken, dont use
         {
-            layers[layers.Length - 1].ReWeightOutput(desiredOuput, output);//reweight the output layer
+            layers[layers.Length - 1].ReWeightOutput(desiredOuput, output);//Reweight the output layer
 
             for (int i = layers.Length - 2; i >= 0; i--)
             {
-                layers[i].ReWeightHidden(layers[i + 1]);//reweight each hidden layer
+                layers[i].ReWeightHidden(layers[i + 1]);//Reweight each hidden layer
             }
         }
 
@@ -158,16 +119,16 @@ namespace MyAI
 
                 double[] thisInput = inputs[i];
 
-                SetInputs(thisInput);//set a new input
-                double[] output = CalcOutput();//calculate the new output
+                SetInputs(thisInput);//Set a new input
+                double[] output = CalcOutput();//Calculate the new output
 
                 double[] thisDesired = desiredOutputs[i];
 
-                Correct(thisDesired, output);//correct for any mistakes
+                Correct(thisDesired, output);//Correct for any mistakes
             }
         }
 
-        public string[] GetWeights()//so the current weights can be loaded into another network
+        public string[] GetWeights()//So the current weights can be loaded into another network
         {
             List<string> weights = new List<string>();//An array might be better but a list is easier to use
 
@@ -183,14 +144,14 @@ namespace MyAI
             return weights.ToArray();
         }
 
-        public void SaveWeights(string filePath)//saves the weights for later use
+        public void SaveWeights(string filePath)//Saves the weights for later use
         {
             string[] weightText = GetWeights();
             //Maybe use some compression algoithm
             File.WriteAllLines(filePath, weightText);
         }
 
-        public void LoadWeights(string[] weightsString)//sets the weights from another network
+        public void LoadWeights(string[] weightsString)//Sets the weights from another network
         {
             //Should add some check that the string array is for the right number of neurons
             //Should also check the formatt of the string array
@@ -212,14 +173,14 @@ namespace MyAI
             }
         }
 
-        public void LoadFileWeights(string filePath)//can get weights from a file to save training again
+        public void LoadFileWeights(string filePath)//Can get weights from a file to save training again
         {
             string[] lines = File.ReadAllLines(filePath);
-            //if compressed needs to be decompressed
+            //If compressed needs to be decompressed
             LoadWeights(lines);
         }
 
-        public void Mutate()//randomly changes everything by a small amount
+        public void Mutate()//Randomly changes everything by a small amount
         {
             for(int i = 0; i < layers.Length; i++)
             {
@@ -227,7 +188,7 @@ namespace MyAI
             }
         }
 
-        public void Mutate(float effect)//randomly changes everything by a small amount
+        public void Mutate(float effect)//Randomly changes everything by a small amount
         {
             for (int i = 0; i < layers.Length; i++)
             {

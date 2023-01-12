@@ -67,25 +67,18 @@ namespace MyAI
 
         public void SetInputs(double[] input)//Guess what.
         {
-            if (input.Length != weights.Length)
+            if (input.Length != weights.Length)//Incorrect number of inputs
             {
-                //Console.WriteLine("Wrong number of inputs, need " + weights.Count + " inputs");
-                return;
+                throw new Exception("Wrong number of inputs, need " + weights.Length + " inputs");
             }
-            
             //'What?'
+            
             inputs = input;//The inputs are the inputs.
         }
 
         public double CalcOutput()
         {
             double total = 0;
-
-            if (inputs.Length != weights.Length)
-            {
-                //Console.WriteLine("Incorrect number of inputs, should be " + weights.Length + " inputs, there is " + inputs.Count + " inputs");
-                return 0;
-            }
 
             for (int i = 0; i < inputs.Length; i++)
             {
@@ -100,12 +93,6 @@ namespace MyAI
         public double CalcOutput(ActivationFunction activation)
         {
             double total = 0;
-
-            if (inputs.Length != weights.Length)
-            {
-                //Console.WriteLine("Incorrect number of inputs, should be " + weights.Length + " inputs, there is " + inputs.Count + " inputs");
-                return 0;
-            }
 
             for (int i = 0; i < inputs.Length; i++)
             {
@@ -241,17 +228,18 @@ namespace MyAI
         {
             for (int i = 0; i < weights.Length; i++)
             {
-                weights[i] += weights[i] * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
+                weights[i] += weights[i] * effect * 0.01f * rnd.Next(-100, 100);//Make random change
             }
-            bias += bias * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
+            bias += bias * effect * 0.01f * rnd.Next(-100, 100);//Make random change
         }
+
 
         public static double Sigmoid(double value)//We love maths
         {
             return (float)(1.0 / (1.0 + Math.Pow(Math.E, -value)));
         }
 
-        public static double TanH(double value)//Yes we do
+        public static double TanH(double value)
         {
             return (float)((2 / (1 + Math.Exp(-2 * value))) - 1);
         }

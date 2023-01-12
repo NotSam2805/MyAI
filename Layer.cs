@@ -78,6 +78,7 @@ namespace MyAI
             return outputs;
         }
 
+
         public double[] CalcOutputHidden()//Ignore this, I was trying something
         {
             for (int i = 0; i < outputs.Length; i++)
@@ -103,6 +104,7 @@ namespace MyAI
                 neurons[i].ReWeightHidden(prevLayer, i);
             }
         }
+
 
         public void Mutate()//Read comment in NeuralNetwork.cs
         {

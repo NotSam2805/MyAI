@@ -7,7 +7,9 @@ namespace MyAI
     public enum ActivationFunction
     {
         sigmoid,
-        tanH
+        tanH,
+        binaryStep,
+        swish
     }
 
     public class Neuron
@@ -61,16 +63,6 @@ namespace MyAI
             bias = rnd.NextDouble();//Random bias
 
             //Might be useful to be able to set the weights and biases here, or even the random seed
-        }
-
-        public static float Sigmoid(double value)//We love maths
-        {
-            return (float)(1.0 / (1.0 + Math.Pow(Math.E, -value)));
-        }
-
-        public static float TanH(double value)//Yes we do
-        {
-            return (float)((2 / (1 + Math.Exp(-2 * value))) - 1);
         }
 
         public void SetInputs(double[] input)//Guess what.
@@ -130,10 +122,17 @@ namespace MyAI
                 case ActivationFunction.tanH:
                     output = TanH(total - bias);
                     break;
+                case ActivationFunction.binaryStep:
+                    output = BinaryStep(total - bias);
+                    break;
+                case ActivationFunction.swish:
+                    output = Swish(total - bias);
+                    break;
             }
 
             return output;
         }
+
 
         public double CalcOutputHidden()//Looks very similar, idk why this exists
         {
@@ -200,6 +199,7 @@ namespace MyAI
 
             bias += learnRate * -1 * errorGradient;
         }
+
         
         public string GetWeightsString()//This works
         {
@@ -244,6 +244,30 @@ namespace MyAI
                 weights[i] += weights[i] * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
             }
             bias += bias * effect * 0.01f * rnd.Next(-100, 100);//Make random change by maximum of 10%
+        }
+
+        public static double Sigmoid(double value)//We love maths
+        {
+            return (float)(1.0 / (1.0 + Math.Pow(Math.E, -value)));
+        }
+
+        public static double TanH(double value)//Yes we do
+        {
+            return (float)((2 / (1 + Math.Exp(-2 * value))) - 1);
+        }
+
+        public static double BinaryStep(double value)
+        {
+            if(value >= 1)
+            {
+                return 1;
+            }
+            return 0;
+        }
+
+        public static double Swish(double value)
+        {
+            return value * Sigmoid(value);
         }
     }
 }
